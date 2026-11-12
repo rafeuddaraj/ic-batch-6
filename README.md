@@ -1,120 +1,93 @@
-# IC MERN Stack Career Path: Batch 6
+# UI kit
 
-Source code for the **IC MERN Stack Career Path, Batch 6** classes, taught by **Sumit Saha**.
+The prebuilt UI components and starter data used while coding along with the classes. All components are styled with Tailwind.
 
-Everything lives in this one repository. Each class has its own **branch** that holds the complete, runnable code exactly as it stands at the end of that class.
+This is a branch of the [IC MERN Stack Career Path: Batch 6](https://github.com/rafeuddaraj/ic-batch-6) repository.
 
----
+## How to add it
 
-## Table of contents
-
-1. [How this repository works](#how-this-repository-works)
-2. [Branches](#branches)
-3. [Get the code for a class](#get-the-code-for-a-class)
-4. [Coding along: the UI kit](#coding-along-the-ui-kit)
-5. [Requirements](#requirements)
-6. [Missed a class?](#missed-a-class)
-7. [Good to know](#good-to-know)
-
----
-
-## How this repository works
-
-| Branch | What it is |
-|---|---|
-| `main` | This overview. It has no project code. |
-| `lesson-NN` | One branch per class (`lesson-16`, `lesson-17`, ...). The project code sits directly at the root of the branch, ready to install and run. |
-| `ui-kit` | The prebuilt UI components and starter data that the classes use while coding along. |
-
-A new `lesson-NN` branch is added as each class is released. Switch branches with the branch menu at the top left of the file list on GitHub, or with `git switch` on your machine.
-
----
-
-## Branches
-
-| Branch | Contents | Browse | Download |
-|---|---|---|---|
-| `lesson-16` | **TaskFlow** at the end of Lesson 16: Tailwind setup, Thinking in React and Lifting State Up | [Open branch](https://github.com/rafeuddaraj/ic-batch-6/tree/lesson-16) | [ZIP](https://github.com/rafeuddaraj/ic-batch-6/archive/refs/heads/lesson-16.zip) |
-| `ui-kit` | The `ui` and `data` folders for TaskFlow | [Open branch](https://github.com/rafeuddaraj/ic-batch-6/tree/ui-kit) | [ZIP](https://github.com/rafeuddaraj/ic-batch-6/archive/refs/heads/ui-kit.zip) |
-
----
-
-## Get the code for a class
-
-### Option 1: Download a ZIP (no Git needed)
-
-Use the **ZIP** link of the branch in the table above. Unzip it, then:
-
-```bash
-cd the-unzipped-folder
-npm install
-npm run dev
-```
-
-You can also open the branch on GitHub and use **Code → Download ZIP**.
-
-### Option 2: Clone just one branch
-
-```bash
-git clone --branch lesson-16 --single-branch https://github.com/rafeuddaraj/ic-batch-6.git lesson-16
-cd lesson-16
-npm install
-npm run dev
-```
-
-### Option 3: Clone everything and switch between classes
-
-```bash
-git clone https://github.com/rafeuddaraj/ic-batch-6.git
-cd ic-batch-6
-git switch lesson-16
-npm install
-npm run dev
-```
-
-When you switch to another lesson branch, run `npm install` again, because the dependencies can differ between classes.
-
-Open [http://localhost:5173](http://localhost:5173) in your browser once the dev server is running.
-
----
-
-## Coding along: the UI kit
-
-This course focuses on React, not on design. So the small UI components (Button, Input, Card and so on) are prebuilt and styled with Tailwind.
-
-1. Download the [`ui-kit` branch as a ZIP](https://github.com/rafeuddaraj/ic-batch-6/archive/refs/heads/ui-kit.zip).
-2. It contains two folders: `ui` and `data`.
-3. Copy both into the `src/` folder of your project.
+This branch contains two folders: **`ui`** and **`data`**. Copy both into the `src/` folder of your project.
 
 ```
 your-project/
 └── src/
-    ├── ui/      ← from the ui-kit branch
-    ├── data/    ← from the ui-kit branch
+    ├── ui/        ← copy from here
+    ├── data/      ← copy from here
     ├── App.jsx
+    ├── index.css
     └── main.jsx
 ```
 
-The `lesson-NN` branches already include these folders, so you do not need the UI kit to just run a class's code.
+Tailwind must already be set up in your project: `tailwindcss` and `@tailwindcss/vite` installed, the plugin added in `vite.config.js`, and `@import "tailwindcss";` in `src/index.css`.
 
----
+## Usage
 
-## Requirements
+Every component can be imported from one place:
 
-- **Node.js** 22.13 or newer (20.19 or newer also works)
-- **npm** (comes with Node.js)
-- A code editor such as VS Code
-- **Git** (optional, only for the clone options)
+```jsx
+import { Page, Stack, Row, Card, Button, Input, Checkbox } from "./ui";
+import { initialTasks } from "./data/tasks";
 
----
+export default function App() {
+  return (
+    <Page title="TaskFlow">
+      <Stack>
+        <Row>
+          <Input placeholder="New task" />
+          <Button>Add</Button>
+        </Row>
+        <Card>
+          <Checkbox label="A task" />
+        </Card>
+      </Stack>
+    </Page>
+  );
+}
+```
 
-## Missed a class?
+## What is included
 
-Open that class's branch and run it. The code there is the finished result of the class, so you can continue from it or compare it with your own.
+| Component | Purpose | Main props |
+|---|---|---|
+| `Page` | Wrapper for the whole page, with a title | `title`, `theme` (`"light"` or `"dark"`, default `"light"`) |
+| `Stack` | Lays out its children top to bottom | `children` |
+| `Row` | Lays out its children side by side | `children` |
+| `Card` | A box with a border and a shadow | `children` |
+| `Button` | A button | `variant` (`"primary"`, `"secondary"`, `"danger"`), plus any normal `button` prop |
+| `Input` | A text input | any normal `input` prop (`value`, `onChange`, `placeholder`, ...) |
+| `Checkbox` | A checkbox with a label | `label`, plus any normal `input` prop (`checked`, `onChange`, ...) |
+| `Badge` | A small tag | `tone` (`"gray"`, `"green"`, `"red"`) |
+| `Spinner` | A loading spinner | none |
+| `Select` | A dropdown | any normal `select` prop |
+| `navLinkClass` | Class helper for React Router's `NavLink` in later classes | none |
 
----
+Some components are not needed in the first classes. They are in the kit now because later classes use them.
 
-## Good to know
+## Why `...props`
 
-- The text shown inside the apps (labels, placeholders, buttons) is in Bengali, as in the videos. The code and file names are in English.
-- Every lesson branch has its own short `README.md` with the commands and the file structure.
+`Button`, `Input`, `Checkbox`, `Select`, `Stack`, `Row` and `Card` all forward the rest of their props to the real HTML element with `...props`. So any normal prop such as `onClick`, `value`, `onChange` or `type="submit"` can be passed directly, with no extra code.
+
+```jsx
+export default function Button({ variant = 'primary', children, ...props }) {
+  return (
+    <button className={`... ${variants[variant]}`} {...props}>
+      {children}
+    </button>
+  )
+}
+```
+
+## Data
+
+[`data/tasks.js`](data/tasks.js) holds the four starting tasks for TaskFlow. The task titles are written in Bengali, as in the videos. The shape of each task is:
+
+```js
+export const initialTasks = [
+  { id: 1, title: '...', done: true },
+  { id: 2, title: '...', done: true },
+  { id: 3, title: '...', done: false },
+  { id: 4, title: '...', done: false },
+]
+```
+
+The first two tasks start as done, and the last two as not done.
