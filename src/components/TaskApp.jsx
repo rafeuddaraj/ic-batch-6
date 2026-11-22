@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Stack } from "../ui";
+import { useReducer, useState } from "react";
+import { Stack, Button } from "../ui";
 import { initialTasks } from "../data/tasks";
+import { tasksReducer } from "../state/tasksReducer";
 import SearchBar from "./SearchBar";
 import FilterTabs from "./FilterTabs";
 import AddTaskForm from "./AddTaskForm";
@@ -9,7 +10,7 @@ import TaskDetails from "./TaskDetails";
 import TaskSummary from "./TaskSummary";
 
 export default function TaskApp() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedTaskId, setSelectedTaskId] = useState(null);
@@ -28,19 +29,19 @@ export default function TaskApp() {
   const selectedTask = tasks.find((task) => task.id === selectedTaskId);
 
   function handleAddTask(title) {
-    setTasks([...tasks, { id: Date.now(), title, done: false }]);
+    dispatch({ type: "added", id: Date.now(), title });
   }
 
   function handleToggleTask(id) {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, done: !task.done } : task
-      )
-    );
+    dispatch({ type: "toggled", id });
   }
 
   function handleDeleteTask(id) {
-    setTasks(tasks.filter((task) => task.id !== id));
+    dispatch({ type: "deleted", id });
+  }
+
+  function handleClearCompleted() {
+    dispatch({ type: "cleared_completed" });
   }
 
   return (
@@ -61,6 +62,9 @@ export default function TaskApp() {
         done={doneCount}
         remaining={remainingCount}
       />
+      <Button variant="secondary" onClick={handleClearCompleted}>
+        শেষ হওয়া কাজ মুছুন
+      </Button>
     </Stack>
   );
 }
