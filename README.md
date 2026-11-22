@@ -1,8 +1,10 @@
-# TaskFlow: Lesson 17
+# TaskFlow: Lesson 18
 
-The TaskFlow project at the end of **Lesson 17: form status and structuring state**, from the [IC MERN Stack Career Path: Batch 6](https://github.com/rafeuddaraj/ic-batch-6) repository.
+The TaskFlow project at the end of **Lesson 18: useReducer**, from the [IC MERN Stack Career Path: Batch 6](https://github.com/rafeuddaraj/ic-batch-6) repository.
 
-This branch continues from [`lesson-16`](https://github.com/rafeuddaraj/ic-batch-6/tree/lesson-16). All the code here is the finished result of the class.
+Watch the class: [https://youtu.be/Oz7TRb0GUxA](https://youtu.be/Oz7TRb0GUxA)
+
+This branch continues from [`lesson-17`](https://github.com/rafeuddaraj/ic-batch-6/tree/lesson-17). All the code here is the finished result of the class.
 
 ## Run it
 
@@ -22,47 +24,60 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 Node.js 22.13 or newer is required (20.19 or newer also works). No new packages were added in this class.
 
-## What changed since Lesson 16
+## What changed since Lesson 17
 
 To see every change in this class, compare the two branches:
 
 ```bash
-git diff lesson-16 lesson-17
+git diff lesson-17 lesson-18
 ```
 
 | File | Change |
 |---|---|
-| `src/utils/fakeSubmit.js` | **New.** Pretends to be a server: waits one second, then succeeds, or fails when the title is shorter than 3 characters. |
-| `src/components/AddTaskForm.jsx` | The form now has a `status` (`"typing"`, `"submitting"`, `"success"` or `"error"`) and shows a message for each. |
-| `src/components/TaskApp.jsx` | New state `selectedTaskId`. New calculated values `remainingCount` and `selectedTask`. |
-| `src/components/TaskDetails.jsx` | **New.** Shows the selected task with a done or not-done badge. |
-| `src/components/TaskList.jsx`, `TaskItem.jsx` | Each task gets a button to select it, highlighted when selected. |
-| `src/components/TaskSummary.jsx` | Also shows the number of remaining tasks. |
+| `src/state/tasksReducer.js` | **New.** One function that holds every rule for changing the task list: `added`, `toggled`, `deleted` and `cleared_completed`. |
+| `src/components/TaskApp.jsx` | `tasks` now comes from `useReducer(tasksReducer, initialTasks)`. Each handler is a single `dispatch(...)` call. A new "clear completed" button was added. |
 
 ## The core ideas of this class
 
-**1. Think of the UI as a set of states, and keep one `status`.**
-A form can be typing, submitting, successful or failed. Three separate booleans (`isSending`, `isSent`, `hasError`) can disagree with each other and describe a situation that cannot exist, such as "sending" and "sent" at the same time. One `status` value makes that impossible.
+**1. The problem: the rules for changing the list are scattered.**
+In `TaskApp`, every handler had its own `setTasks(...)` logic. Each new feature would add one more handler with more update logic.
+
+**2. The analogy: a notebook and an accountant.**
+The buttons and the form do not change the list themselves. They hand in a **slip** (an *action*) that says what happened. The **reducer** is the accountant: it takes the current state and the slip, and returns the new state.
+
+**3. Action, dispatch and reducer.**
 
 ```jsx
-const [status, setStatus] = useState("typing");
-// "typing" | "submitting" | "success" | "error"
+// an action: an object that says what happened
+dispatch({ type: "toggled", id });
+
+// the reducer: current state + action → new state
+export function tasksReducer(tasks, action) {
+  switch (action.type) {
+    case "added":
+      return [...tasks, { id: action.id, title: action.title, done: false }];
+    case "toggled":
+      return tasks.map((task) =>
+        task.id === action.id ? { ...task, done: !task.done } : task
+      );
+    // ...
+  }
+}
+
+// connecting them in the component
+const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
 ```
 
-**2. If it can be calculated, it is not state.**
-Values that come from other state or props are calculated while rendering, not stored. In this class: `isEmpty`, `isSubmitting`, `remainingCount` and `selectedTask`.
+**4. Rules for a reducer.**
 
-```jsx
-const isSubmitting = status === "submitting";
-const remainingCount = tasks.length - doneCount;
-const selectedTask = tasks.find((task) => task.id === selectedTaskId);
-```
+- **Never change the state directly.** Return a new array. Calling `push` on `tasks` and returning it is the classic mistake: React sees the very same array, so the screen does not update, and the next update shows a duplicated task. In development, `StrictMode` runs reducers twice on purpose to help you catch this.
+- **Handle unknown actions.** The `default` case throws an error, so a misspelled action type is caught immediately instead of silently doing nothing.
+- **Only calculate.** No `Date.now()`, random numbers, network calls or timers inside a reducer. That is why the new task's `id` is created in the handler and sent in the action.
 
-**3. To remember a selection, store the id, not a copy of the object.**
-A copy of the whole task goes out of date when the original changes. With only `selectedTaskId`, the selected task is always looked up from `tasks`, so there is one source of truth.
+**5. useState or useReducer?**
+Use `useState` for a simple value, or state that changes in one or two simple ways (`searchText`, `statusFilter`, `selectedTaskId`). Use `useReducer` when many kinds of events change the same state and you want all the rules together (`tasks`). Both can live in the same component, as they do in `TaskApp`. You can start with `useState` and move to `useReducer` later.
 
-**4. (Optional) Reset a component's state with `key`.**
-When the same component stays in the same place, React keeps its state. Giving it a different `key`, such as `key={contact.id}`, makes React start it fresh. The class shows this with a small chat example, which is not part of this branch's code.
+The class uses a small counter example to compare the two. It is only for learning and is not part of this branch's code.
 
 ## Project structure
 
@@ -72,14 +87,16 @@ src/
 ├── index.css              # @import "tailwindcss";
 ├── App.jsx                # <Page title="TaskFlow"><TaskApp /></Page>
 ├── components/
-│   ├── TaskApp.jsx        # state: tasks, searchText, statusFilter, selectedTaskId
+│   ├── TaskApp.jsx        # useReducer: tasks; useState: searchText, statusFilter, selectedTaskId
 │   ├── SearchBar.jsx
 │   ├── FilterTabs.jsx
-│   ├── AddTaskForm.jsx    # state: title, status, error
+│   ├── AddTaskForm.jsx
 │   ├── TaskList.jsx
 │   ├── TaskItem.jsx
 │   ├── TaskDetails.jsx
 │   └── TaskSummary.jsx
+├── state/
+│   └── tasksReducer.js
 ├── utils/
 │   └── fakeSubmit.js
 ├── data/
@@ -91,9 +108,8 @@ src/
 
 ## Documentation
 
-- [Choosing the State Structure](https://react.dev/learn/choosing-the-state-structure)
-- [Reacting to Input with State](https://react.dev/learn/reacting-to-input-with-state)
-- [Preserving and Resetting State](https://react.dev/learn/preserving-and-resetting-state)
+- [Extracting State Logic into a Reducer](https://react.dev/learn/extracting-state-logic-into-a-reducer)
+- [`useReducer` reference](https://react.dev/reference/react/useReducer)
 - [`useState` reference](https://react.dev/reference/react/useState)
 
 The text shown in the app (labels, placeholders, buttons, messages) is in Bengali, as in the video.
