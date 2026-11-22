@@ -37,6 +37,7 @@ A new `lesson-NN` branch is added as each class is released. Switch branches wit
 | `lesson-16` | **TaskFlow** at the end of Lesson 16: Tailwind setup, Thinking in React and Lifting State Up | [Open branch](https://github.com/rafeuddaraj/ic-batch-6/tree/lesson-16) | [ZIP](https://github.com/rafeuddaraj/ic-batch-6/archive/refs/heads/lesson-16.zip) |
 | `lesson-17` | **TaskFlow** at the end of Lesson 17: form status and structuring state | [Open branch](https://github.com/rafeuddaraj/ic-batch-6/tree/lesson-17) | [ZIP](https://github.com/rafeuddaraj/ic-batch-6/archive/refs/heads/lesson-17.zip) |
 | `lesson-18` | **TaskFlow** at the end of Lesson 18: useReducer | [Open branch](https://github.com/rafeuddaraj/ic-batch-6/tree/lesson-18) | [ZIP](https://github.com/rafeuddaraj/ic-batch-6/archive/refs/heads/lesson-18.zip) |
+| `lesson-19` | **TaskFlow** at the end of Lesson 19: Context + Reducer | [Open branch](https://github.com/rafeuddaraj/ic-batch-6/tree/lesson-19) | [ZIP](https://github.com/rafeuddaraj/ic-batch-6/archive/refs/heads/lesson-19.zip) |
 | `ui-kit` | The `ui` and `data` folders for TaskFlow | [Open branch](https://github.com/rafeuddaraj/ic-batch-6/tree/ui-kit) | [ZIP](https://github.com/rafeuddaraj/ic-batch-6/archive/refs/heads/ui-kit.zip) |
 
 ---
