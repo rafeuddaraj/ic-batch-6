@@ -1,13 +1,7 @@
 import { Stack } from "../ui";
 import TaskItem from "./TaskItem";
 
-export default function TaskList({
-  tasks,
-  selectedTaskId,
-  onToggleTask,
-  onDeleteTask,
-  onSelectTask,
-}) {
+export default function TaskList({ tasks, selectedTaskId, onSelectTask }) {
   return (
     <Stack>
       {tasks.map((task) => (
@@ -15,8 +9,6 @@ export default function TaskList({
           key={task.id}
           task={task}
           isSelected={task.id === selectedTaskId}
-          onToggle={onToggleTask}
-          onDelete={onDeleteTask}
           onSelect={onSelectTask}
         />
       ))}

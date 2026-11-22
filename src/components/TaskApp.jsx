@@ -1,16 +1,17 @@
-import { useReducer, useState } from "react";
-import { Stack, Button } from "../ui";
-import { initialTasks } from "../data/tasks";
-import { tasksReducer } from "../state/tasksReducer";
+import { useState } from "react";
+import { Stack, Row, Button } from "../ui";
+import { useTasks, useTasksDispatch } from "../context/TasksContext";
 import SearchBar from "./SearchBar";
 import FilterTabs from "./FilterTabs";
 import AddTaskForm from "./AddTaskForm";
 import TaskList from "./TaskList";
 import TaskDetails from "./TaskDetails";
 import TaskSummary from "./TaskSummary";
+import ThemeToggle from "./ThemeToggle";
 
 export default function TaskApp() {
-  const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
+  const tasks = useTasks();
+  const dispatch = useTasksDispatch();
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedTaskId, setSelectedTaskId] = useState(null);
@@ -28,32 +29,17 @@ export default function TaskApp() {
   const remainingCount = tasks.length - doneCount;
   const selectedTask = tasks.find((task) => task.id === selectedTaskId);
 
-  function handleAddTask(title) {
-    dispatch({ type: "added", id: Date.now(), title });
-  }
-
-  function handleToggleTask(id) {
-    dispatch({ type: "toggled", id });
-  }
-
-  function handleDeleteTask(id) {
-    dispatch({ type: "deleted", id });
-  }
-
-  function handleClearCompleted() {
-    dispatch({ type: "cleared_completed" });
-  }
-
   return (
     <Stack>
-      <SearchBar searchText={searchText} onSearchChange={setSearchText} />
+      <Row>
+        <SearchBar searchText={searchText} onSearchChange={setSearchText} />
+        <ThemeToggle />
+      </Row>
       <FilterTabs statusFilter={statusFilter} onFilterChange={setStatusFilter} />
-      <AddTaskForm onAddTask={handleAddTask} />
+      <AddTaskForm />
       <TaskList
         tasks={visibleTasks}
         selectedTaskId={selectedTaskId}
-        onToggleTask={handleToggleTask}
-        onDeleteTask={handleDeleteTask}
         onSelectTask={setSelectedTaskId}
       />
       {selectedTask && <TaskDetails task={selectedTask} />}
@@ -62,7 +48,10 @@ export default function TaskApp() {
         done={doneCount}
         remaining={remainingCount}
       />
-      <Button variant="secondary" onClick={handleClearCompleted}>
+      <Button
+        variant="secondary"
+        onClick={() => dispatch({ type: "cleared_completed" })}
+      >
         শেষ হওয়া কাজ মুছুন
       </Button>
     </Stack>

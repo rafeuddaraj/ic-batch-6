@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Stack, Row, Input, Button } from "../ui";
 import { fakeSubmit } from "../utils/fakeSubmit";
+import { useTasksDispatch } from "../context/TasksContext";
 
-export default function AddTaskForm({ onAddTask }) {
+export default function AddTaskForm() {
+  const dispatch = useTasksDispatch();
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("typing");
   const [error, setError] = useState(null);
@@ -15,7 +17,7 @@ export default function AddTaskForm({ onAddTask }) {
     setStatus("submitting");
     try {
       await fakeSubmit(title.trim());
-      onAddTask(title.trim());
+      dispatch({ type: "added", id: Date.now(), title: title.trim() });
       setTitle("");
       setStatus("success");
     } catch (err) {

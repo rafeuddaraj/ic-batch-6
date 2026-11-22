@@ -1,18 +1,15 @@
 import { Row, Checkbox, Button } from "../ui";
+import { useTasksDispatch } from "../context/TasksContext";
 
-export default function TaskItem({
-  task,
-  isSelected,
-  onToggle,
-  onDelete,
-  onSelect,
-}) {
+export default function TaskItem({ task, isSelected, onSelect }) {
+  const dispatch = useTasksDispatch();
+
   return (
     <Row>
       <Checkbox
         label={task.title}
         checked={task.done}
-        onChange={() => onToggle(task.id)}
+        onChange={() => dispatch({ type: "toggled", id: task.id })}
       />
       <Button
         variant={isSelected ? "primary" : "secondary"}
@@ -20,7 +17,10 @@ export default function TaskItem({
       >
         দেখুন
       </Button>
-      <Button variant="danger" onClick={() => onDelete(task.id)}>
+      <Button
+        variant="danger"
+        onClick={() => dispatch({ type: "deleted", id: task.id })}
+      >
         মুছুন
       </Button>
     </Row>
