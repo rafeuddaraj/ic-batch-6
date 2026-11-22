@@ -1,10 +1,8 @@
-# TaskFlow: Lesson 18
+# TaskFlow: Lesson 19
 
-The TaskFlow project at the end of **Lesson 18: useReducer**, from the [IC MERN Stack Career Path: Batch 6](https://github.com/rafeuddaraj/ic-batch-6) repository.
+The TaskFlow project at the end of **Lesson 19: Context + Reducer**, from the [IC MERN Stack Career Path: Batch 6](https://github.com/rafeuddaraj/ic-batch-6) repository.
 
-Watch the class: [https://youtu.be/Oz7TRb0GUxA](https://youtu.be/Oz7TRb0GUxA)
-
-This branch continues from [`lesson-17`](https://github.com/rafeuddaraj/ic-batch-6/tree/lesson-17). All the code here is the finished result of the class.
+This branch continues from [`lesson-18`](https://github.com/rafeuddaraj/ic-batch-6/tree/lesson-18). All the code here is the finished result of the class.
 
 ## Run it
 
@@ -24,92 +22,111 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 Node.js 22.13 or newer is required (20.19 or newer also works). No new packages were added in this class.
 
-## What changed since Lesson 17
+## What changed since Lesson 18
 
 To see every change in this class, compare the two branches:
 
 ```bash
-git diff lesson-17 lesson-18
+git diff lesson-18 lesson-19
 ```
 
 | File | Change |
 |---|---|
-| `src/state/tasksReducer.js` | **New.** One function that holds every rule for changing the task list: `added`, `toggled`, `deleted` and `cleared_completed`. |
-| `src/components/TaskApp.jsx` | `tasks` now comes from `useReducer(tasksReducer, initialTasks)`. Each handler is a single `dispatch(...)` call. A new "clear completed" button was added. |
+| `src/context/ThemeContext.jsx` | **New.** `ThemeProvider` holds the light/dark theme. `useTheme()` reads it. |
+| `src/context/TasksContext.jsx` | **New.** `TasksProvider` runs `useReducer` and shares `tasks` and `dispatch` through two contexts. `useTasks()` and `useTasksDispatch()` read them. |
+| `src/components/ThemeToggle.jsx` | **New.** A button that switches between light and dark mode. |
+| `src/App.jsx` | Wraps the app in `ThemeProvider` and `TasksProvider`. |
+| `src/components/TaskApp.jsx` | No more handlers passed down. It reads `tasks` and `dispatch` from context. |
+| `src/components/TaskList.jsx` | Only receives `tasks`, `selectedTaskId` and `onSelectTask`. |
+| `src/components/TaskItem.jsx` | Calls `dispatch` itself for toggle and delete. |
+| `src/components/AddTaskForm.jsx` | Calls `dispatch` itself to add a task. |
+| `eslint.config.js` | Turns off `react-refresh/only-export-components` for `src/context/`, because a context file exports both a provider and a hook. |
 
 ## The core ideas of this class
 
-**1. The problem: the rules for changing the list are scattered.**
-In `TaskApp`, every handler had its own `setTasks(...)` logic. Each new feature would add one more handler with more update logic.
+**1. The problem: prop drilling.**
+Handlers such as `onToggleTask` and `onDeleteTask` travelled `TaskApp → TaskList → TaskItem`. The middle component only passed them along. Every new feature made the list of props longer.
 
-**2. The analogy: a notebook and an accountant.**
-The buttons and the form do not change the list themselves. They hand in a **slip** (an *action*) that says what happened. The **reducer** is the accountant: it takes the current state and the slip, and returns the new state.
-
-**3. Action, dispatch and reducer.**
+**2. Context in three steps.**
 
 ```jsx
-// an action: an object that says what happened
-dispatch({ type: "toggled", id });
+// 1. create the context
+const ThemeContext = createContext(null);
 
-// the reducer: current state + action → new state
-export function tasksReducer(tasks, action) {
-  switch (action.type) {
-    case "added":
-      return [...tasks, { id: action.id, title: action.title, done: false }];
-    case "toggled":
-      return tasks.map((task) =>
-        task.id === action.id ? { ...task, done: !task.done } : task
-      );
-    // ...
-  }
-}
+// 2. provide a value from above
+<ThemeContext value={{ theme, toggleTheme }}>{children}</ThemeContext>
 
-// connecting them in the component
-const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
+// 3. read it from any component below
+const { theme, toggleTheme } = useContext(ThemeContext);
 ```
 
-**4. Rules for a reducer.**
+In React 19 you write `<ThemeContext value={...}>` directly. The old `.Provider` is not needed.
 
-- **Never change the state directly.** Return a new array. Calling `push` on `tasks` and returning it is the classic mistake: React sees the very same array, so the screen does not update, and the next update shows a duplicated task. In development, `StrictMode` runs reducers twice on purpose to help you catch this.
-- **Handle unknown actions.** The `default` case throws an error, so a misspelled action type is caught immediately instead of silently doing nothing.
-- **Only calculate.** No `Date.now()`, random numbers, network calls or timers inside a reducer. That is why the new task's `id` is created in the handler and sent in the action.
+**3. Where the provider sits decides who gets the value.**
+A component gets the value from the **closest provider above it**. A component outside the provider does not receive the value and only sees the default one (`null` here). That is why `useTheme()` fails with `Cannot destructure property 'theme' ...` if you forget to wrap the app.
 
-**5. useState or useReducer?**
-Use `useState` for a simple value, or state that changes in one or two simple ways (`searchText`, `statusFilter`, `selectedTaskId`). Use `useReducer` when many kinds of events change the same state and you want all the rules together (`tasks`). Both can live in the same component, as they do in `TaskApp`. You can start with `useState` and move to `useReducer` later.
+**4. Context + Reducer together.**
+`tasks` and `dispatch` live in two separate contexts:
 
-The class uses a small counter example to compare the two. It is only for learning and is not part of this branch's code.
+```jsx
+export function TasksProvider({ children }) {
+  const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
+
+  return (
+    <TasksContext value={tasks}>
+      <TasksDispatchContext value={dispatch}>{children}</TasksDispatchContext>
+    </TasksContext>
+  );
+}
+
+export function useTasks() {
+  return useContext(TasksContext);
+}
+
+export function useTasksDispatch() {
+  return useContext(TasksDispatchContext);
+}
+```
+
+Any component can now call `useTasksDispatch()` and send an action. Nothing has to be passed through the components in between.
+
+**5. When not to use context.**
+Do not put everything in context. First ask whether props or `children` can solve it. Use context when many components, far apart, need the same thing, such as the theme, the current user or the task list.
+
+**6. One owner for the state.**
+The state has one owner (`TasksProvider`). Every other component only reads it or sends an action.
+
+The class also uses small throwaway examples (a themed button, a toolbar and a nested heading) to explain context. They are only for learning and are not part of this branch's code.
 
 ## Project structure
 
 ```
 src/
+├── App.jsx
 ├── main.jsx
-├── index.css              # @import "tailwindcss";
-├── App.jsx                # <Page title="TaskFlow"><TaskApp /></Page>
+├── index.css
 ├── components/
-│   ├── TaskApp.jsx        # useReducer: tasks; useState: searchText, statusFilter, selectedTaskId
-│   ├── SearchBar.jsx
-│   ├── FilterTabs.jsx
 │   ├── AddTaskForm.jsx
-│   ├── TaskList.jsx
-│   ├── TaskItem.jsx
+│   ├── FilterTabs.jsx
+│   ├── SearchBar.jsx
+│   ├── TaskApp.jsx
 │   ├── TaskDetails.jsx
-│   └── TaskSummary.jsx
-├── state/
-│   └── tasksReducer.js
-├── utils/
-│   └── fakeSubmit.js
-├── data/
-│   └── tasks.js           # UI kit: the four starting tasks
-└── ui/                    # UI kit: Page, Stack, Row, Card, Button, Input, ...
+│   ├── TaskItem.jsx
+│   ├── TaskList.jsx
+│   ├── TaskSummary.jsx
+│   └── ThemeToggle.jsx
+├── context/
+│   ├── TasksContext.jsx
+│   └── ThemeContext.jsx
+├── data/tasks.js
+├── state/tasksReducer.js
+├── ui/            (prebuilt UI kit)
+└── utils/fakeSubmit.js
 ```
 
-`src/ui` and `src/data` come from the [`ui-kit` branch](https://github.com/rafeuddaraj/ic-batch-6/tree/ui-kit).
+## Learn more
 
-## Documentation
-
-- [Extracting State Logic into a Reducer](https://react.dev/learn/extracting-state-logic-into-a-reducer)
-- [`useReducer` reference](https://react.dev/reference/react/useReducer)
-- [`useState` reference](https://react.dev/reference/react/useState)
-
-The text shown in the app (labels, placeholders, buttons, messages) is in Bengali, as in the video.
+- [Passing Data Deeply with Context](https://react.dev/learn/passing-data-deeply-with-context)
+- [Scaling Up with Reducer and Context](https://react.dev/learn/scaling-up-with-reducer-and-context)
+- [`createContext`](https://react.dev/reference/react/createContext)
+- [`useContext`](https://react.dev/reference/react/useContext)
