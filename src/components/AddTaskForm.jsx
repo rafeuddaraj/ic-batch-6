@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Stack, Row, Input, Button } from "../ui";
 import { fakeSubmit } from "../utils/fakeSubmit";
 import { useTasksDispatch } from "../context/TasksContext";
@@ -8,6 +8,7 @@ export default function AddTaskForm() {
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState("typing");
   const [error, setError] = useState(null);
+  const inputRef = useRef(null);
 
   const isEmpty = title.trim() === "";
   const isSubmitting = status === "submitting";
@@ -20,6 +21,7 @@ export default function AddTaskForm() {
       dispatch({ type: "added", id: Date.now(), title: title.trim() });
       setTitle("");
       setStatus("success");
+      inputRef.current.focus();
     } catch (err) {
       setError(err.message);
       setStatus("error");
@@ -36,6 +38,7 @@ export default function AddTaskForm() {
       <Stack>
         <Row>
           <Input
+            ref={inputRef}
             value={title}
             onChange={handleTitleChange}
             placeholder="নতুন কাজ"
