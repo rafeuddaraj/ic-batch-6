@@ -1,5 +1,6 @@
 import { Row, Checkbox, Button } from "../ui";
 import { useTasksDispatch } from "../context/TasksContext";
+import TaskTimer from "./TaskTimer";
 
 export default function TaskItem({ task, isSelected, onSelect }) {
   const dispatch = useTasksDispatch();
@@ -11,6 +12,7 @@ export default function TaskItem({ task, isSelected, onSelect }) {
         checked={task.done}
         onChange={() => dispatch({ type: "toggled", id: task.id })}
       />
+      <TaskTimer />
       <Button
         variant={isSelected ? "primary" : "secondary"}
         onClick={() => onSelect(task.id)}
